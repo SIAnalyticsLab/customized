@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Python Data Structures Crash Course | Teleprompter Notes</title>
+
+  <style>
+    :root{
+      --bg: #0b1220;
+      --panel: #0f172a;
+      --panel2: #0b1326;
+      --text: #e5e7eb;
+      --muted: #a7b0c0;
+      --accent: #0f766e;
+      --accent2: #facc15;
+      --border: rgba(255,255,255,0.10);
+      --shadow: 0 10px 30px rgba(0,0,0,0.35);
+      --radius: 14px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      --base: 18px;
+      --line: 1.65;
+    }
+
+    *{ box-sizing:border-box; }
+    html, body{ height:100%; }
+    body{
+      margin:0;
+      font-family: var(--sans);
+      background: radial-gradient(1100px 700px at 12% 10%, rgba(15,118,110,0.25), transparent 60%),
+                  radial-gradient(900px 600px at 90% 10%, rgba(250,204,21,0.12), transparent 55%),
+                  var(--bg);
+      color: var(--text);
+      font-size: var(--base);
+      line-height: var(--line);
+      overflow:hidden;
+    }
+
+    a{ color:inherit; }
+    kbd{
+      font-family: var(--mono);
+      padding: 2px 6px;
+      border: 1px solid var(--border);
+      border-bottom-width: 2px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.06);
+      font-size: 0.9em;
+    }
+
+    .app{
+      height:100%;
+      display:grid;
+      grid-template-columns: 360px 1fr;
+      gap: 18px;
+      padding: 18px;
+    }
+
+    /* Sidebar */
+    .sidebar{
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      min-width: 300px;
+    }
+
+    .sidebar-header{
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .course-title{
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      margin: 0 0 6px 0;
+      font-size: 16px;
+      color: var(--text);
+    }
+    .course-subtitle{
+      margin:0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .sidebar-controls{
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display:grid;
+      gap: 10px;
+    }
+
+    .row{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+
+    .control{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      width:100%;
+    }
+
+    .label{
+      font-size: 12px;
+      color: var(--muted);
+      min-width: 92px;
+    }
+
+    input[type="range"]{
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    .btns{
+      display:flex;
+      gap: 8px;
+      flex-wrap:wrap;
+      width:100%;
+    }
+
+    button{
+      cursor:pointer;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      padding: 10px 10px;
+      border-radius: 12px;
+      font-weight: 650;
+      letter-spacing: 0.2px;
+      transition: transform .05s ease, background .2s ease, border-color .2s ease;
+    }
+    button:hover{ background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.16); }
+    button:active{ transform: translateY(1px); }
+
+    .primary{
+      background: rgba(15,118,110,0.35);
+      border-color: rgba(15,118,110,0.55);
+    }
+    .primary:hover{ background: rgba(15,118,110,0.48); }
+
+    .ghost{
+      background: transparent;
+    }
+
+    .sidebar-list{
+      padding: 10px 8px 14px;
+      overflow:auto;
+    }
+
+    .slide-item{
+      display:flex;
+      gap: 10px;
+      align-items:flex-start;
+      padding: 10px 10px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      margin: 6px 6px;
+      user-select:none;
+      cursor:pointer;
+      transition: background .18s ease, border-color .18s ease;
+    }
+
+    .slide-item:hover{
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.08);
+    }
+
+    .slide-item.active{
+      background: rgba(15,118,110,0.22);
+      border-color: rgba(15,118,110,0.38);
+    }
+
+    .badge{
+      flex:0 0 auto;
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight: 800;
+      color: #0b1220;
+      background: linear-gradient(135deg, rgba(250,204,21,0.95), rgba(250,204,21,0.65));
+      box-shadow: 0 10px 18px rgba(0,0,0,0.25);
+    }
+
+    .item-text{
+      display:flex;
+      flex-direction:column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .item-title{
+      font-size: 13px;
+      font-weight: 750;
+      margin:0;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .item-meta{
+      font-size: 12px;
+      color: var(--muted);
+      margin:0;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    /* Main */
+    .main{
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      min-width: 0;
+    }
+
+    .topbar{
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      justify-content:space-between;
+      background: rgba(255,255,255,0.03);
+    }
+
+    .progress{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      min-width: 0;
+    }
+    .pill{
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05);
+      font-size: 12px;
+      color: var(--muted);
+      white-space:nowrap;
+    }
+
+    .hint{
+      font-size: 12px;
+      color: var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .content{
+      overflow:auto;
+      padding: 18px 18px 22px;
+    }
+
+    .slide{
+      max-width: 980px;
+      margin: 0 auto;
+      padding-bottom: 18px;
+    }
+
+    .slide h1{
+      font-size: 26px;
+      line-height: 1.25;
+      margin: 0 0 10px 0;
+      letter-spacing: 0.2px;
+    }
+
+    .section-tag{
+      display:inline-flex;
+      gap: 8px;
+      align-items:center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(15,118,110,0.40);
+      background: rgba(15,118,110,0.18);
+      color: #baf3eb;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .card{
+      background: rgba(11,19,38,0.55);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 14px 12px;
+    }
+
+    .card h2{
+      margin: 0 0 8px 0;
+      font-size: 15px;
+      color: #dbe3f3;
+      letter-spacing: 0.2px;
+    }
+
+    .card p, .card li{
+      margin: 0;
+      color: var(--text);
+    }
+
+    .muted{
+      color: var(--muted);
+    }
+
+    ul{
+      margin: 8px 0 0 18px;
+      padding: 0;
+    }
+    li{ margin: 4px 0; }
+
+    .callout{
+      border-left: 4px solid var(--accent);
+      background: rgba(15,118,110,0.10);
+      padding: 12px 12px;
+      border-radius: 12px;
+    }
+
+    .callout.warning{
+      border-left-color: rgba(250,204,21,0.9);
+      background: rgba(250,204,21,0.08);
+    }
+
+    .callout h3{
+      margin: 0 0 6px 0;
+      font-size: 13px;
+      color: #eaf7f6;
+      letter-spacing: 0.2px;
+    }
+
+    .code{
+      font-family: var(--mono);
+      font-size: 14px;
+      line-height: 1.55;
+      white-space: pre;
+      overflow:auto;
+      padding: 12px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.22);
+    }
+
+    .output{
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.55;
+      white-space: pre;
+      overflow:auto;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.03);
+      margin-top: 8px;
+      color: #dbe3f3;
+    }
+
+    .footer-nav{
+      display:flex;
+      gap: 10px;
+      justify-content:space-between;
+      align-items:center;
+      margin-top: 14px;
+      flex-wrap:wrap;
+    }
+
+    .small{
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .toggle{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      justify-content:space-between;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      width: 100%;
+    }
+
+    .toggle input{
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+    }
+
+    .hidden{ display:none !important; }
+
+    @media (max-width: 980px){
+      body{ overflow:auto; }
+      .app{
+        grid-template-columns: 1fr;
+        height:auto;
+        overflow:visible;
+      }
+      .sidebar{ max-height: 42vh; }
+      .main{ max-height: 58vh; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="Slide Navigator">
+      <div class="sidebar-header">
+        <p class="course-title">Python Data Structures Crash Course</p>
+        <p class="course-subtitle">Teleprompter Notes for Recorded Lecture</p>
+      </div>
+
+      <div class="sidebar-controls">
+        <div class="toggle" title="Hide details if you want a clean teleprompter view">
+          <div>
+            <div style="font-weight:750; font-size:13px;">Teleprompter mode</div>
+            <div class="small">Shows only speaker notes + cues</div>
+          </div>
+          <input id="teleToggle" type="checkbox" />
+        </div>
+
+        <div class="row">
+          <div class="control">
+            <div class="label">Text size</div>
+            <input id="fontSlider" type="range" min="16" max="28" step="1" value="18" />
+          </div>
+        </div>
+
+        <div class="btns">
+          <button class="primary" id="prevBtn" type="button">Prev</button>
+          <button class="primary" id="nextBtn" type="button">Next</button>
+          <button class="ghost" id="scrollTopBtn" type="button" title="Jump to top of slide">Top</button>
+        </div>
+
+        <div class="small">
+          Shortcuts:
+          <span style="display:inline-block; margin-left:6px;">
+            <kbd>←</kbd> <kbd>→</kbd> to navigate,
+            <kbd>T</kbd> teleprompter,
+            <kbd>+</kbd>/<kbd>-</kbd> text size
+          </span>
+        </div>
+      </div>
+
+      <div class="sidebar-list" id="slideList"></div>
+    </aside>
+
+    <main class="main" aria-label="Teleprompter Content">
+      <div class="topbar">
+        <div class="progress">
+          <div class="pill" id="pillIndex">Slide 1 of 25</div>
+          <div class="pill" id="pillSection">Welcome</div>
+        </div>
+        <div class="hint" id="hintText">Use the left panel to jump to any slide.</div>
+      </div>
+
+      <div class="content" id="content">
+        <div class="slide" id="slideContainer"></div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const slides = [
+      {
+        id: 1,
+        section: "Welcome",
+        title: "Welcome & Session Overview",
+        concept: [
+          "Today, we are learning how Python stores, organizes, and works with data.",
+          "Frame this as learning the containers Python uses to hold information."
+        ],
+        speaker: [
+          "Open with the big picture: Python is not just about writing code, it is about representing information.",
+          "Tell learners: by the end, you will be able to choose the right container for the data you have."
+        ],
+        bullets: [
+          "Store multiple values using Lists",
+          "Organize data using Dictionaries",
+          "Understand pandas Series for labeled data",
+          "Work with DataFrames, the foundation of data analysis in Python"
+        ],
+        cue: [
+          "Pause and ask: “Who has ever stored multiple values in Excel before?”",
+          "Connect Excel columns and tables to Series and DataFrames."
+        ]
+      },
+      {
+        id: 2,
+        section: "Welcome",
+        title: "Why Data Structures Matter",
+        concept: [
+          "Data structures allow us to store data efficiently, access it easily, and perform analysis and transformations.",
+          "Without data structures, Python would only work with one value at a time."
+        ],
+        speaker: [
+          "Emphasize this: data analysis begins with structuring data, not charting data.",
+          "Your choice of structure determines how easy analysis will be later."
+        ],
+        analogy: [
+          "A variable is like a single notebook.",
+          "A data structure is like a filing cabinet with labeled drawers."
+        ],
+        cue: [
+          "Ask: “What happens if we try to analyze 10,000 records one variable at a time?”",
+          "Let learners answer, then reinforce: we need containers."
+        ]
+      },
+
+      // SECTION 1: LISTS
+      {
+        id: 3,
+        section: "Python Lists",
+        title: "What Is a Python List?",
+        concept: [
+          "A list is an ordered collection of items.",
+          "Lists are mutable, which means we can change them after creation."
+        ],
+        bullets: [
+          "Can store numbers, strings, or mixed types",
+          "Items are stored in a specific order",
+          "Lists can grow and shrink"
+        ],
+        code: `numbers = [10, 20, 30, 40]
+names = ["Alice", "Bob", "Charlie"]
+mixed = [1, "Python", True]`,
+        output: "No output. Variables are stored.",
+        analogy: [
+          "A list is like a shopping list where order matters."
+        ],
+        pitfalls: [
+          "Forgetting square brackets []",
+          "Assuming all items must be the same type (they do not)"
+        ],
+        checks: [
+          "Quick check: Can a list contain both numbers and text? Why?"
+        ],
+        cue: [
+          "Emphasize: order matters, and lists are changeable."
+        ]
+      },
+      {
+        id: 4,
+        section: "Python Lists",
+        title: "Accessing List Items (Indexing)",
+        concept: [
+          "Each item has a position called an index.",
+          "Python indexing starts at 0, not 1."
+        ],
+        code: `numbers = [10, 20, 30, 40]
+
+numbers[0]
+numbers[2]`,
+        output: "10\n30",
+        analogy: [
+          "Think of seats in a bus numbered starting from zero."
+        ],
+        pitfalls: [
+          "Beginners expect indexing to start at 1",
+          "Using parentheses instead of brackets when indexing"
+        ],
+        checks: [
+          "Question: What value is at index 1 in [10, 20, 30, 40]?"
+        ],
+        cue: [
+          "Pause and repeat: “Python always starts counting from zero.”"
+        ]
+      },
+      {
+        id: 5,
+        section: "Python Lists",
+        title: "Negative Indexing",
+        concept: [
+          "Negative indexes count from the end of the list.",
+          "-1 means the last item, -2 means the second-to-last item."
+        ],
+        code: `numbers = [10, 20, 30, 40]
+
+numbers[-1]
+numbers[-2]`,
+        output: "40\n30",
+        analogy: [
+          "Negative indexing is like counting seats from the back of the bus."
+        ],
+        checks: [
+          "Quick exercise: How would you get the last item in any list?"
+        ],
+        cue: [
+          "Ask learners to say it out loud: list_name[-1]."
+        ]
+      },
+      {
+        id: 6,
+        section: "Python Lists",
+        title: "Slicing Lists",
+        concept: [
+          "Slicing extracts a portion of a list using list[start:stop].",
+          "Start is inclusive, stop is exclusive."
+        ],
+        code: `numbers = [10, 20, 30, 40, 50]
+
+numbers[1:4]`,
+        output: "[20, 30, 40]",
+        pitfalls: [
+          "Off-by-one errors (forgetting stop is not included)"
+        ],
+        checks: [
+          "Question: What does numbers[:3] return?",
+          "Exercise: Slice the last 2 items using negative indices."
+        ],
+        cue: [
+          "Emphasize: stop is NOT included. Repeat it twice."
+        ]
+      },
+      {
+        id: 7,
+        section: "Python Lists",
+        title: "Common List Methods",
+        concept: [
+          "Lists have built-in functions called methods.",
+          "Methods let us add, insert, and remove items."
+        ],
+        code: `numbers = [10, 20, 30]
+
+numbers.append(40)
+numbers.insert(1, 15)
+numbers.remove(20)
+
+numbers`,
+        output: "[10, 15, 30, 40]",
+        bullets: [
+          "append() adds to the end",
+          "insert() adds at a position",
+          "remove() removes by value"
+        ],
+        pitfalls: [
+          "Using remove() for an item that is not present",
+          "Confusing remove(value) with pop(index)"
+        ],
+        checks: [
+          "Quick check: What happens if the value does not exist when using remove()?"
+        ],
+        cue: [
+          "Ask learners to predict the final list before you run the code."
+        ]
+      },
+      {
+        id: 8,
+        section: "Python Lists",
+        title: "List Length and Membership",
+        concept: [
+          "We often need to know how many items exist and whether an item exists."
+        ],
+        code: `numbers = [10, 15, 30, 40]
+
+len(numbers)
+30 in numbers`,
+        output: "4\nTrue",
+        pitfalls: [
+          "Forgetting that 'in' returns True/False"
+        ],
+        checks: [
+          "Exercise: Check if 99 is in the list.",
+          "Question: What data type does len(numbers) return?"
+        ],
+        cue: [
+          "Connect this to loops and if-statements coming later in learners’ journey."
+        ]
+      },
+      {
+        id: 9,
+        section: "Python Lists",
+        title: "Mini List Exercise (Live Practice)",
+        concept: [
+          "Learners practice creating and modifying lists."
+        ],
+        speaker: [
+          "Give learners 2 minutes to try, then walk through a solution slowly.",
+          "Encourage them to type, not copy-paste."
+        ],
+        bullets: [
+          "Create a list of 5 countries",
+          "Print the first and last country",
+          "Add a new country",
+          "Remove one country"
+        ],
+        cue: [
+          "Pause the recording here if needed.",
+          "Ask: “What is the index of the first item again?”"
+        ]
+      },
+
+      // SECTION 2: DICTIONARIES
+      {
+        id: 10,
+        section: "Python Dictionaries",
+        title: "What Is a Dictionary?",
+        concept: [
+          "A dictionary stores data as key-value pairs.",
+          "Keys act like labels, values are the data attached to those labels."
+        ],
+        code: `student = {
+    "name": "John",
+    "age": 25,
+    "course": "Data Science"
+}`,
+        analogy: [
+          "A dictionary is like a real dictionary: Word = key, Meaning = value."
+        ],
+        bullets: [
+          "Curly braces { } define dictionaries",
+          "Keys must be unique"
+        ],
+        pitfalls: [
+          "Repeating keys (later entries overwrite earlier ones)",
+          "Assuming dictionaries keep the same logic as list indexing"
+        ],
+        checks: [
+          "Quick check: If two keys have the same name, which one wins?"
+        ],
+        cue: [
+          "Say out loud: dictionaries are for labeled information."
+        ]
+      },
+      {
+        id: 11,
+        section: "Python Dictionaries",
+        title: "Accessing Dictionary Values",
+        concept: [
+          "We access values using keys, not indexes."
+        ],
+        code: `student = {
+    "name": "John",
+    "age": 25,
+    "course": "Data Science"
+}
+
+student["name"]
+student["age"]`,
+        output: "John\n25",
+        pitfalls: [
+          "Trying student[0] like a list",
+          "Using a key that does not exist"
+        ],
+        checks: [
+          "Question: What will happen if you run student['gender']?"
+        ],
+        cue: [
+          "Explain: wrong keys cause KeyError. This is a common beginner frustration."
+        ]
+      },
+      {
+        id: 12,
+        section: "Python Dictionaries",
+        title: "Updating and Adding Items",
+        concept: [
+          "Dictionaries are mutable: you can update an existing key or add a new one."
+        ],
+        code: `student = {
+    "name": "John",
+    "age": 25,
+    "course": "Data Science"
+}
+
+student["age"] = 26
+student["city"] = "New York"
+
+student`,
+        output: "Dictionary updated (values changed and new key added).",
+        checks: [
+          "Exercise: Add a new key called 'email' with any value.",
+          "Question: What is the difference between updating a key vs adding a new key?"
+        ],
+        cue: [
+          "Emphasize: same syntax for update and add, key decides what happens."
+        ]
+      },
+      {
+        id: 13,
+        section: "Python Dictionaries",
+        title: "Removing Items",
+        concept: [
+          "You can remove items using del."
+        ],
+        code: `student = {
+    "name": "John",
+    "age": 26,
+    "course": "Data Science",
+    "city": "New York"
+}
+
+del student["city"]
+student`,
+        pitfalls: [
+          "Deleting a key that does not exist causes KeyError"
+        ],
+        checks: [
+          "Question: How would you remove a key safely if you are not sure it exists?"
+        ],
+        cue: [
+          "Mention: pop() can be used, but keep this minimal for beginners unless asked."
+        ]
+      },
+      {
+        id: 14,
+        section: "Python Dictionaries",
+        title: "When to Use Dictionaries",
+        concept: [
+          "Use dictionaries when data has labels and you want fast lookups."
+        ],
+        bullets: [
+          "Storing survey responses",
+          "Working with JSON data",
+          "Saving configuration settings"
+        ],
+        cue: [
+          "Ask: “Would you store a student record as a list or a dictionary? Why?”"
+        ]
+      },
+
+      // SECTION 3: PANDAS SERIES
+      {
+        id: 15,
+        section: "Pandas Series",
+        title: "What Is Pandas?",
+        concept: [
+          "pandas is a Python library for data analysis.",
+          "Lists and dictionaries are Python tools. pandas is a data science tool."
+        ],
+        code: `import pandas as pd`,
+        cue: [
+          "Pause and ask: “Who has used Excel filters or pivot tables?”",
+          "Explain: pandas is Python’s workhorse for that kind of work."
+        ]
+      },
+      {
+        id: 16,
+        section: "Pandas Series",
+        title: "What Is a Series?",
+        concept: [
+          "A Series is a one-dimensional labeled array."
+        ],
+        code: `import pandas as pd
+
+scores = pd.Series([80, 85, 90, 75])
+scores`,
+        output: "0    80\n1    85\n2    90\n3    75\ndtype: int64",
+        analogy: [
+          "A Series is like a single Excel column."
+        ],
+        checks: [
+          "Question: What are the labels here if we did not specify an index?"
+        ],
+        cue: [
+          "Explain: pandas creates a default index 0..n-1."
+        ]
+      },
+      {
+        id: 17,
+        section: "Pandas Series",
+        title: "Series with Custom Index",
+        concept: [
+          "You can give a Series meaningful labels using a custom index."
+        ],
+        code: `import pandas as pd
+
+scores = pd.Series(
+    [80, 85, 90],
+    index=["Math", "Science", "English"]
+)
+scores`,
+        output: "Math       80\nScience    85\nEnglish    90\ndtype: int64",
+        checks: [
+          "Exercise: Access the Science score using the label."
+        ],
+        cue: [
+          "Emphasize: labels help interpretation and make analysis safer."
+        ]
+      },
+      {
+        id: 18,
+        section: "Pandas Series",
+        title: "Basic Series Operations",
+        concept: [
+          "Series support vectorized operations like mean and max without loops."
+        ],
+        code: `import pandas as pd
+
+scores = pd.Series([80, 85, 90, 75])
+
+scores.mean()
+scores.max()`,
+        output: "Mean: 82.5\nMax: 90",
+        cue: [
+          "Highlight: no loops needed, pandas operations are designed for analytics."
+        ],
+        checks: [
+          "Question: Why is avoiding loops helpful when data is large?"
+        ]
+      },
+
+      // SECTION 4: DATAFRAMES
+      {
+        id: 19,
+        section: "Pandas DataFrames",
+        title: "What Is a DataFrame?",
+        concept: [
+          "A DataFrame is a 2-dimensional table with rows and columns."
+        ],
+        analogy: [
+          "A DataFrame is like an Excel worksheet or a database table."
+        ],
+        cue: [
+          "Ask: “If Series is one column, what is DataFrame?”",
+          "Let learners answer: multiple columns."
+        ]
+      },
+      {
+        id: 20,
+        section: "Pandas DataFrames",
+        title: "Creating a DataFrame from a Dictionary",
+        concept: [
+          "A common way to create a DataFrame is from a dictionary of lists."
+        ],
+        code: `import pandas as pd
+
+data = {
+    "Name": ["Alice", "Bob", "Charlie"],
+    "Age": [24, 30, 28],
+    "Score": [85, 90, 88]
+}
+
+df = pd.DataFrame(data)
+df`,
+        output: "A table with rows and columns.",
+        cue: [
+          "Emphasize: each key becomes a column name."
+        ],
+        checks: [
+          "Question: Why must each list have the same length?"
+        ]
+      },
+      {
+        id: 21,
+        section: "Pandas DataFrames",
+        title: "Viewing Data",
+        concept: [
+          "head() previews records. info() summarizes structure and data types."
+        ],
+        code: `df.head()
+df.info()`,
+        cue: [
+          "Explain: head() is your first look. info() is your first quality check."
+        ],
+        checks: [
+          "Quick check: What does info() tell you that head() does not?"
+        ]
+      },
+      {
+        id: 22,
+        section: "Pandas DataFrames",
+        title: "Selecting Columns and Rows",
+        concept: [
+          "Use df['col'] for a column and df.loc[row_label] for a row."
+        ],
+        code: `df["Name"]
+df.loc[0]`,
+        pitfalls: [
+          "Confusing loc (labels) with iloc (positions)"
+        ],
+        cue: [
+          "Keep it simple: loc uses labels, iloc uses integer positions."
+        ],
+        checks: [
+          "Exercise: Select the Score column.",
+          "Question: What do you expect df.loc[1] to return?"
+        ]
+      },
+      {
+        id: 23,
+        section: "Pandas DataFrames",
+        title: "Simple Transformations",
+        concept: [
+          "You can create derived columns using logical expressions."
+        ],
+        code: `df["Passed"] = df["Score"] > 80
+df`,
+        cue: [
+          "Explain: this is where raw data becomes insight."
+        ],
+        checks: [
+          "Question: Which students passed based on the rule Score > 80?"
+        ]
+      },
+      {
+        id: 24,
+        section: "Pandas DataFrames",
+        title: "Mini DataFrame Exercise (Live Practice)",
+        concept: [
+          "Learners practice building and transforming a small DataFrame."
+        ],
+        bullets: [
+          "Create a DataFrame with Name and Salary",
+          "Add a column for tax (10 percent)",
+          "Display only names earning above a threshold"
+        ],
+        cue: [
+          "Walk through slowly. Ask learners to predict outputs before running code.",
+          "Call out common errors: missing commas, uneven list lengths, wrong column names."
+        ]
+      },
+      {
+        id: 25,
+        section: "Wrap-Up",
+        title: "Key Takeaways",
+        concept: [
+          "Lists store ordered data.",
+          "Dictionaries store labeled data.",
+          "Series add labels to one-dimensional data.",
+          "DataFrames are the foundation of analysis."
+        ],
+        cue: [
+          "Final question: “Which data structure would you use for survey data and why?”",
+          "Pause, let learners respond, then close."
+        ],
+        speaker: [
+          "Close with encouragement: learners now have the building blocks to start analyzing real datasets.",
+          "Invite them to practice using the lab notebook."
+        ]
+      }
+    ];
+
+    // Build slide list
+    const slideList = document.getElementById("slideList");
+    const slideContainer = document.getElementById("slideContainer");
+    const content = document.getElementById("content");
+    const pillIndex = document.getElementById("pillIndex");
+    const pillSection = document.getElementById("pillSection");
+    const hintText = document.getElementById("hintText");
+
+    const teleToggle = document.getElementById("teleToggle");
+    const fontSlider = document.getElementById("fontSlider");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const scrollTopBtn = document.getElementById("scrollTopBtn");
+
+    let current = 0;
+
+    function el(tag, className, text){
+      const e = document.createElement(tag);
+      if(className) e.className = className;
+      if(text !== undefined) e.textContent = text;
+      return e;
+    }
+
+    function renderList(){
+      slideList.innerHTML = "";
+      slides.forEach((s, idx) => {
+        const item = el("div", "slide-item" + (idx === current ? " active" : ""));
+        item.setAttribute("role", "button");
+        item.setAttribute("tabindex", "0");
+        item.addEventListener("click", () => goTo(idx));
+        item.addEventListener("keydown", (ev) => {
+          if(ev.key === "Enter" || ev.key === " "){
+            ev.preventDefault();
+            goTo(idx);
+          }
+        });
+
+        const b = el("div", "badge", String(s.id));
+        const textWrap = el("div", "item-text");
+        const t = el("p", "item-title", s.title);
+        const m = el("p", "item-meta", s.section);
+        textWrap.appendChild(t);
+        textWrap.appendChild(m);
+
+        item.appendChild(b);
+        item.appendChild(textWrap);
+        slideList.appendChild(item);
+      });
+    }
+
+    function card(title, bodyNodes){
+      const c = el("div", "card");
+      const h = el("h2", "", title);
+      c.appendChild(h);
+      bodyNodes.forEach(n => c.appendChild(n));
+      return c;
+    }
+
+    function listNode(items){
+      const ul = el("ul");
+      items.forEach(x => ul.appendChild(el("li","",x)));
+      return ul;
+    }
+
+    function para(text){
+      const p = el("p");
+      p.textContent = text;
+      return p;
+    }
+
+    function callout(title, items, kind=""){
+      const box = el("div", "callout" + (kind ? " " + kind : ""));
+      const h = el("h3","", title);
+      box.appendChild(h);
+      if(Array.isArray(items)){
+        box.appendChild(listNode(items));
+      } else {
+        box.appendChild(para(items));
+      }
+      return box;
+    }
+
+    function codeBlock(code){
+      const pre = el("div", "code");
+      pre.textContent = code;
+      return pre;
+    }
+
+    function outputBlock(text){
+      const pre = el("div", "output");
+      pre.textContent = text;
+      return pre;
+    }
+
+    function renderSlide(){
+      const s = slides[current];
+      slideContainer.innerHTML = "";
+
+      const tag = el("div","section-tag");
+      tag.textContent = s.section;
+      slideContainer.appendChild(tag);
+
+      const h1 = el("h1","", `Slide ${s.id}: ${s.title}`);
+      slideContainer.appendChild(h1);
+
+      const grid = el("div","grid");
+
+      const isTele = teleToggle.checked;
+
+      // In teleprompter mode, prioritize speaker notes + cues.
+      if(s.speaker && s.speaker.length){
+        const nodes = [listNode(s.speaker)];
+        grid.appendChild(card("Speaker Notes (read this)", nodes));
+      } else {
+        // If no explicit speaker notes, use concept as speaker notes.
+        if(s.concept && s.concept.length){
+          grid.appendChild(card("Speaker Notes (read this)", [listNode(s.concept)]));
+        }
+      }
+
+      if(s.cue && s.cue.length){
+        grid.appendChild(card("Presenter Cues (pause, ask, emphasize)", [callout("Cues", s.cue)]));
+      }
+
+      if(!isTele){
+        if(s.concept && s.concept.length){
+          grid.appendChild(card("Concept Explanation", [listNode(s.concept)]));
+        }
+
+        if(s.analogy && s.analogy.length){
+          grid.appendChild(card("Analogy / Real-World Context", [callout("Use this analogy", s.analogy)]));
+        }
+
+        if(s.bullets && s.bullets.length){
+          grid.appendChild(card("Key Points", [listNode(s.bullets)]));
+        }
+
+        if(s.code){
+          const nodes = [codeBlock(s.code)];
+          if(s.output) nodes.push(outputBlock(s.output));
+          grid.appendChild(card("Code Demo (type and run)", nodes));
+        }
+
+        if(s.pitfalls && s.pitfalls.length){
+          grid.appendChild(card("Common Learner Pitfalls", [callout("Watch for these", s.pitfalls, "warning")]));
+        }
+
+        if(s.checks && s.checks.length){
+          grid.appendChild(card("Quick Checks (ask learners)", [callout("Comprehension checks", s.checks)]));
+        }
+      }
+
+      slideContainer.appendChild(grid);
+
+      // Footer navigation
+      const footer = el("div","footer-nav");
+      const left = el("div","small", "Tip: Keep this window on your second screen. Read speaker notes while demoing on the main screen.");
+      const right = el("div","small", `Current view: ${isTele ? "Teleprompter" : "Detailed"}`);
+      footer.appendChild(left);
+      footer.appendChild(right);
+      slideContainer.appendChild(footer);
+
+      pillIndex.textContent = `Slide ${s.id} of ${slides.length}`;
+      pillSection.textContent = s.section;
+      hintText.textContent = isTele
+        ? "Teleprompter mode: Speaker notes + cues only."
+        : "Detailed mode: Notes, concept, code, pitfalls, and checks.";
+
+      // reset scroll to top for each slide
+      content.scrollTop = 0;
+
+      // update list active state
+      renderList();
+    }
+
+    function goTo(idx){
+      current = Math.max(0, Math.min(slides.length - 1, idx));
+      renderSlide();
+    }
+
+    function next(){
+      if(current < slides.length - 1) goTo(current + 1);
+    }
+
+    function prev(){
+      if(current > 0) goTo(current - 1);
+    }
+
+    // Controls
+    teleToggle.addEventListener("change", renderSlide);
+
+    fontSlider.addEventListener("input", () => {
+      const v = Number(fontSlider.value);
+      document.documentElement.style.setProperty("--base", v + "px");
+    });
+
+    prevBtn.addEventListener("click", prev);
+    nextBtn.addEventListener("click", next);
+    scrollTopBtn.addEventListener("click", () => content.scrollTop = 0);
+
+    // Keyboard shortcuts
+    window.addEventListener("keydown", (e) => {
+      // ignore when user focuses on inputs
+      const tag = (document.activeElement && document.activeElement.tagName) ? document.activeElement.tagName.toLowerCase() : "";
+      const inInput = tag === "input" || tag === "textarea" || tag === "select";
+
+      if(!inInput && (e.key === "ArrowRight")) next();
+      if(!inInput && (e.key === "ArrowLeft")) prev();
+
+      if(!inInput && (e.key === "t" || e.key === "T")){
+        teleToggle.checked = !teleToggle.checked;
+        renderSlide();
+      }
+
+      if(!inInput && (e.key === "+" || e.key === "=")){
+        const v = Math.min(28, Number(fontSlider.value) + 1);
+        fontSlider.value = v;
+        document.documentElement.style.setProperty("--base", v + "px");
+      }
+
+      if(!inInput && (e.key === "-" || e.key === "_")){
+        const v = Math.max(16, Number(fontSlider.value) - 1);
+        fontSlider.value = v;
+        document.documentElement.style.setProperty("--base", v + "px");
+      }
+    });
+
+    // Initialize
+    renderList();
+    renderSlide();
+  </script>
+</body>
+</html>
